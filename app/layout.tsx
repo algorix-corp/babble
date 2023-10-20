@@ -1,6 +1,13 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from './providers';
+import localFont from 'next/font/local';
+
+const suitFont = localFont({
+    src: '../public/fonts/SUIT-Variable.woff2',
+    display: 'swap',
+    variable: '--font-suit'
+})
 
 export const metadata: Metadata = {
     title: 'Babble',
@@ -13,7 +20,7 @@ export default function RootLayout({
     children: React.ReactNode
 }) {
     return (
-        <html lang="en">
+        <html lang="en" className={`dark ${suitFont.className}`}>
             <body>
                 <Providers>
                     {children}
