@@ -2,10 +2,81 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+enum LoR {
+    LOCAL
+    STATE
+    REGIONAL
+    NATIONAL
+    INTERNATIONAL
+}
+
+model User {
+    id         String         @id @default(uuid()) @db.Uuid
+    email      String         @unique
+    activities Activity[]
+    honors     Honor[]
+    invites    Collaborator[] @relation("Invites")
+    invited    Collaborator[] @relation("Invited")
+    cohorts    Cohort[]
+}
+
+model Collaborator {
+    id        Int    @id @default(autoincrement())
+    userId    String
+    invitedId String
+    user      User   @relation("Invites", fields: [userId], references: [id], onDelete: Cascade)
+    invited   User   @relation("Invited", fields: [invitedId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+    id            String   @id @default(uuid()) @db.Uuid
+    userId        String
+    name          String
+    description   String
+    keywords      String[]
+    grade_started Int
+    grade_ended   Int
+    user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Honor {
+    id                   String   @id @default(uuid()) @db.Uuid
+    userId               String
+    name                 String
+    description          String
+    keywords             String[]
+    level_of_recognition LoR
+    user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Cohort {
+    id             String    @id @default(uuid()) @db.Uuid
+    userId         String
+    name           String
+    early_deadline DateTime?
+    final_deadline DateTime?
+    private        Boolean   @default(false)
+    user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    essays         Essay[]
+}
+
+model Essay {
+    id         String    @id @default(uuid()) @db.Uuid
+    cohortId   String
+    name       String
+    prompt     String
+    keywords   String[]
+    deadline   DateTime?
+    brainstorm String?
+    content    String?
+    finalized  Boolean   @default(false)
+    cohort     Cohort    @relation(fields: [cohortId], references: [id], onDelete: Cascade)
 }
