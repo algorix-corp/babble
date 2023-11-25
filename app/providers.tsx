@@ -1,6 +1,6 @@
 'use client'
 
-import { SessionProvider } from 'next-auth/react';
+import { SessionProvider } from 'next-auth/react'; // TODO - might be unnecessary
 import { NextUIProvider } from '@nextui-org/react'
 import NextTopLoader from 'nextjs-toploader'
 import { Toaster } from 'react-hot-toast'

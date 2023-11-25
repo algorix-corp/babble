@@ -2,15 +2,12 @@
 
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@nextui-org/navbar";
 import { Button } from "@nextui-org/button";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import NextLink from "next/link";
 import { Link } from '@nextui-org/link';
-import { useRouter } from "next/navigation";
+import { Session } from "next-auth";
 
-export default function LandingNav() {
-    let { status } = useSession();
-    let router = useRouter();
-
+export default function LandingNav({ session }: { session: Session }) {
     return (
         <Navbar >
             <NavbarBrand>
@@ -35,18 +32,20 @@ export default function LandingNav() {
 
             <NavbarContent justify="end">
                 <NavbarItem>
-                    {status === "loading" ? <div /> : status === "authenticated" ? (
+                    {session ? (
                         <>
-                            <Button variant="solid" onClick={() => router.push("/dashboard")} className="mr-3">
-                                Dashboard
-                            </Button>
+                            <Link href={`/u/${session.user.id}`}>
+                                <Button variant="solid" className="mr-3">
+                                    Dashboard
+                                </Button>
+                            </Link>
 
                             <Button variant="ghost" onClick={() => signOut()}>
                                 Logout
                             </Button>
                         </>
                     ) : (
-                        <Button variant="ghost" onClick={() => signIn("github", { callbackUrl: "/dashboard" })}>
+                        <Button variant="ghost" onClick={() => signIn("google")}>
                             Login
                         </Button>
                     )}

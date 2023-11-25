@@ -18,48 +18,57 @@ enum LoR {
     INTERNATIONAL
 }
 
+enum GP {
+    K9
+    K10
+    K11
+    K12
+    POSTGRADUATE
+}
+
 model User {
-    id         String         @id @default(uuid()) @db.Uuid
-    email      String         @unique
-    activities Activity[]
-    honors     Honor[]
-    invites    Collaborator[] @relation("Invites")
-    invited    Collaborator[] @relation("Invited")
-    cohorts    Cohort[]
+    id          String         @id @default(uuid()) @db.Uuid
+    email       String         @unique
+    name        String
+    picture     String?
+    admin       Boolean        @default(false)
+    activities  Activity[]
+    honors      Honor[]
+    invitations Collaborator[] @relation("Invitations")
+    invited     Collaborator[] @relation("Invited")
+    cohorts     Cohort[]
 }
 
 model Collaborator {
     id        Int    @id @default(autoincrement())
-    userId    String
-    invitedId String
-    user      User   @relation("Invites", fields: [userId], references: [id], onDelete: Cascade)
+    userId    String @db.Uuid
+    invitedId String @db.Uuid
+    user      User   @relation("Invitations", fields: [userId], references: [id], onDelete: Cascade)
     invited   User   @relation("Invited", fields: [invitedId], references: [id], onDelete: Cascade)
 }
 
 model Activity {
-    id            String   @id @default(uuid()) @db.Uuid
-    userId        String
+    id            String @id @default(uuid()) @db.Uuid
+    userId        String @db.Uuid
     name          String
     description   String
-    keywords      String[]
-    grade_started Int
-    grade_ended   Int
-    user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    participation GP[]
+    user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Honor {
-    id                   String   @id @default(uuid()) @db.Uuid
-    userId               String
+    id                   String @id @default(uuid()) @db.Uuid
+    userId               String @db.Uuid
     name                 String
     description          String
-    keywords             String[]
     level_of_recognition LoR
-    user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    grade_received       GP
+    user                 User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Cohort {
     id             String    @id @default(uuid()) @db.Uuid
-    userId         String
+    userId         String    @db.Uuid
     name           String
     early_deadline DateTime?
     final_deadline DateTime?
@@ -70,10 +79,9 @@ model Cohort {
 
 model Essay {
     id         String    @id @default(uuid()) @db.Uuid
-    cohortId   String
+    cohortId   String    @db.Uuid
     name       String
     prompt     String
-    keywords   String[]
     deadline   DateTime?
     brainstorm String?
     content    String?

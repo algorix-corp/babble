@@ -1,9 +1,12 @@
+import { auth } from "@/lib/nextauth";
 import LandingNav from "./LandingNav";
 
-export default function Landing() {
+export default async function Landing() {
+    let session = await auth();
+
     return (
         <>
-            <LandingNav />
+            <LandingNav session={session} />
         </>
     );
 }
