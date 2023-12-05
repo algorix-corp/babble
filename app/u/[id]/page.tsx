@@ -1,45 +1,36 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/nextauth";
 import AccessPage from "./AccessPage";
-
-// TODO - possibly optimizable
-// export async function generateStaticParams() {
-//     // Load every user using prisma
-//     let users = await prisma.user.findMany();
-
-//     // Return every user's ID
-//     return users.map(user => ({
-//         id: user.id
-//     }));
-// }
+import CantAccessPage from "./CantAccessPage";
+import { notFound } from "next/navigation";
 
 export default async function UserPage({ params }: { params: { id: string } }) {
-    let session = await auth();
+    try {
+        let session = await auth();
 
-    // Page owner's user ID
-    let id = params.id;
+        // Load page owner
+        let user = await prisma.user.findUnique({ where: { id: params.id }, include: { activities: true, cohorts: true, honors: true, invitations: true } });
 
-    // Check basic permission to view page
-    let canView = session.user.admin || id === session.user.id;
+        // Check basic permission to view page
+        let canView = session.user.admin || user.id === session.user.id;
 
-    // Check if collaborator
-    if (!canView) {
-        let collaborator = await prisma.collaborator.findFirst({
-            where: {
-                userId: id,
-                invitedId: session.user.id // am I invited?
-            }
-        });
-        canView = !!collaborator;
+        // Check if collaborator
+        if (!canView) {
+            let collaborator = await prisma.collaborator.findFirst({
+                where: {
+                    userId: user.id,
+                    invitedId: session.user.id // am I invited?
+                }
+            });
+            canView = !!collaborator;
+        }
+
+        // Can view page
+        if (canView) return <AccessPage user={user} me={session.user.id} />
+
+        // Can't view page
+        return <CantAccessPage user={user} />
+    } catch (error) {
+        return notFound();
     }
-
-    // Can view page
-    if (canView) return <AccessPage id={id} self={id === session.user.id} />
-
-    // Can't view page
-    return (
-        <div>
-
-        </div>
-    )
 }

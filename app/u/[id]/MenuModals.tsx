@@ -8,12 +8,20 @@ import { Checkbox } from "@nextui-org/checkbox";
 import { Listbox, ListboxItem } from "@nextui-org/listbox";
 import Image from "next/image";
 
-export function NewActivityModal() {
+export function NewActivityModal({ setActivities }: { setActivities: Function }) {
     let [name, setName] = useState("");
     let [description, setDescription] = useState("");
     let [participation, setParticipation] = useState(new Set([]));
 
-    async function createActivity(cb: Function) {
+    const createActivity = async (cb: Function) => {
+        const done = async (res: any, resolve: Function) => {
+            let data = await res.json();
+            setActivities((activities: any) => [data, ...activities]);
+
+            resolve();
+            cb();
+        }
+
         toast.promise(new Promise((resolve, reject) => fetch("/api/activity", {
             method: "POST",
             body: JSON.stringify({
@@ -21,10 +29,10 @@ export function NewActivityModal() {
                 description,
                 participation: Array.from(participation).sort((a, b) => isNaN(a) ? 1 : isNaN(b) ? -1 : Number(a) - Number(b)).map(v => isNaN(v) ? v : "K" + v)
             })
-        }).then((res) => res.status === 400 ? res.json().then(reject) : resolve(true))).then(() => cb()),
+        }).then((res) => res.status === 200 ? done(res, resolve) : res.json().then(reject))),
             {
                 loading: "Adding new activity...",
-                success: "Activity added! Please refresh the page to see it.",
+                success: "Activity added!",
                 error: (data) => data.error
             }
         );
@@ -54,9 +62,17 @@ export function NewActivityModal() {
     );
 }
 
-export function NewHonorModal() {
+export function NewHonorModal({ setHonors }: { setHonors: Function }) {
     async function createHonor(e: any, cb: Function) {
         e.preventDefault();
+
+        const done = async (res: any, resolve: Function) => {
+            let data = await res.json();
+            setHonors((honors: any) => [data, ...honors]);
+
+            resolve();
+            cb();
+        }
 
         toast.promise(new Promise((resolve, reject) => fetch("/api/honor", {
             method: "POST",
@@ -66,7 +82,7 @@ export function NewHonorModal() {
                 level_of_recognition: e.target.level_of_recognition.value,
                 grade_received: e.target.grade_received.value,
             })
-        }).then((res) => res.status === 400 ? res.json().then(reject) : resolve(true))).then(() => cb()),
+        }).then((res) => res.status === 200 ? done(res, resolve) : res.json().then(reject))).then(() => cb()),
             {
                 loading: "Adding new honor...",
                 success: "Honor added! Please refresh the page to see it.",
@@ -107,9 +123,17 @@ export function NewHonorModal() {
     );
 }
 
-export function NewCohortModal() {
+export function NewCohortModal({ setCohorts }: { setCohorts: Function }) {
     async function createCohort(e: any, cb: Function) {
         e.preventDefault();
+
+        const done = async (res: any, resolve: Function) => {
+            let data = await res.json();
+            setCohorts((cohorts: any) => [data, ...cohorts]);
+
+            resolve();
+            cb();
+        }
 
         toast.promise(new Promise((resolve, reject) => fetch("/api/cohort", {
             method: "POST",
@@ -117,7 +141,7 @@ export function NewCohortModal() {
                 name: e.target.name.value,
                 private: e.target.private.checked
             })
-        }).then((res) => res.status === 400 ? res.json().then(reject) : resolve(true))).then(() => cb()),
+        }).then((res) => res.status === 200 ? done(res, resolve) : res.json().then(reject))).then(() => cb()),
             {
                 loading: "Adding new cohort...",
                 success: "Cohort added! Please refresh the page to see it.",
@@ -156,7 +180,7 @@ export function ViewInvitationsModal() {
     return (
         <ModalContent>
             <div className="m-3.5 flex flex-col" >
-                <p className="text-xl">Users that Invited me for Collaboration</p>
+                <p className="text-xl">Users that invited me for collaboration</p>
 
                 <Listbox>
                     {invitations.map((invitation) => (
@@ -175,7 +199,7 @@ export function ViewInvitationsModal() {
     );
 }
 
-export function NewCollaboratorModal() {
+export function NewCollaboratorModal({ setCollaborators }: { setCollaborators: Function }) {
     async function inviteCollaborator(e: any, cb: Function) {
         e.preventDefault();
 

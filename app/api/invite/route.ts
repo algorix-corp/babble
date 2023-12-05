@@ -27,3 +27,17 @@ export async function POST(req: Request) {
 
     return Response.json(collaborator);
 }
+
+export async function DELETE(req: Request) {
+    let session = await auth();
+    let { id } = await req.json();
+
+    await prisma.collaborator.deleteMany({
+        where: {
+            userId: id,
+            invitedId: session.user.id
+        }
+    });
+
+    return Response.json({ success: true });
+}
